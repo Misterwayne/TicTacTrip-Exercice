@@ -33,8 +33,6 @@ cd TicTacTrip-Exercice
 
 Install the dependencies:
 
-bash
-
 npm install
 
 Start the API server:
