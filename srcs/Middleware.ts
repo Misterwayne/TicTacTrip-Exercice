@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { wordCounts, SECRET_KEY, TokenPayload} from '../app';
 import jwt from 'jsonwebtoken';
 
@@ -40,13 +40,20 @@ export const rateLimitMiddleware = (req: Request, res: Response, next: NextFunct
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
     
     const token = req.headers.authorization;
-
+    const Currentdate = new Date();
     if (!token) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
     try {
         const decoded = jwt.verify(token.replace('Bearer ', ''), SECRET_KEY) as TokenPayload;
         req.user = decoded;
+        const {date} = req.user;
+        // get the date from the user
+        if (date !== Currentdate.getDate()){
+            //check if the token was made today
+            console.log("word count reseted");
+            wordCounts[token] = 0;
+        }
         next();
     } catch (error) {
         return res.status(403).json({ error: 'Invalid token' });
