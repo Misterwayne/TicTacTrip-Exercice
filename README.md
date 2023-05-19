@@ -95,3 +95,5 @@ To ensure fair usage of the API, rate limiting is applied. The rate limit is set
 Authentication
 
 The API uses JSON Web Tokens (JWT) for authentication. To access the API endpoints, include the JWT token in the Authorization header with the prefix Bearer. You can obtain a valid token by making a request to the /api/token endpoint with a valid email address.
+
+API adrress : https://tictactripeexo.onrender.com
