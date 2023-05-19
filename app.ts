@@ -16,6 +16,7 @@ export const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key';
 
 export interface TokenPayload {
 	email: string;
+	date: number;
 }
 
 export interface WordCount {
@@ -37,6 +38,7 @@ app.post('/api/token', (req: Request, res: Response) => {
 		return res.status(400).json({ error: 'Invalid Content-Type. Expected application/json' });
 	}
 	const { email } = req.body;
+	const date = new Date().getDate();
 
 	if (!email) {
 		return res.status(400).json({ error: 'Email is required' });
@@ -48,7 +50,8 @@ app.post('/api/token', (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Invalid email format' });
   }
 
-	const token = jwt.sign({ email }, SECRET_KEY, { expiresIn: '1h' });
+  	console.log("dare : ", date);
+	const token = jwt.sign({ email, date }, SECRET_KEY);
 
 	res.json({ token });
 });
@@ -70,7 +73,7 @@ app.post('/api/justify', authenticateToken, rateLimitMiddleware,(req: Request, r
 
 	console.log(justifiedText);
 
-	res.send(justifiedText);
+	res.send({justifiedText});
 });
 
 
