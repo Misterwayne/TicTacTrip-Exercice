@@ -20,7 +20,7 @@ export interface TokenPayload {
 }
 
 export interface WordCount {
-		[token: string]: number;
+		[token: string]:{count: number, date:number} 
 	}
 	
 export const wordCounts: WordCount = {};
@@ -50,8 +50,9 @@ app.post('/api/token', (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Invalid email format' });
   }
 
-  	console.log("dare : ", date);
-	const token = jwt.sign({ email, date }, SECRET_KEY);
+  	console.log("date : ", date);
+	const token = jwt.sign({ email }, SECRET_KEY);
+	wordCounts[token].date = date;
 
 	res.json({ token });
 });

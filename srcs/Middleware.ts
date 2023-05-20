@@ -23,7 +23,7 @@ export const rateLimitMiddleware = (req: Request, res: Response, next: NextFunct
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const wordCount = wordCounts[token] || 0;
+    const wordCount = wordCounts[token].count || 0;
 
     const text = req.body;
     const newWordCount = countWords(text);
@@ -31,8 +31,7 @@ export const rateLimitMiddleware = (req: Request, res: Response, next: NextFunct
     if (wordCount + newWordCount > 80000) {
         return res.status(402).json({ error: 'Payment Required' });
     }
-
-    wordCounts[token] = wordCount + newWordCount;
+    wordCounts[token].count = wordCount + newWordCount;
 
     next();
 };
@@ -46,13 +45,12 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     }
     try {
         const decoded = jwt.verify(token.replace('Bearer ', ''), SECRET_KEY) as TokenPayload;
-        req.user = decoded;
-        const {date} = req.user;
-        // get the date from the user
-        if (date !== Currentdate.getDate()){
+
+        if (wordCounts[token].date !== Currentdate.getDate()){
             //check if the token was made today
             console.log("word count reseted");
-            wordCounts[token] = 0;
+            wordCounts[token].count = 0;
+            wordCounts[token].date = Currentdate.getDate();
         }
         next();
     } catch (error) {
