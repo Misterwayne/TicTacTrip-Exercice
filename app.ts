@@ -38,7 +38,7 @@ app.post('/api/token', (req: Request, res: Response) => {
 		return res.status(400).json({ error: 'Invalid Content-Type. Expected application/json' });
 	}
 	const { email } = req.body;
-	const date = new Date().getDate();
+	const date = new Date();
 
 	if (!email) {
 		return res.status(400).json({ error: 'Email is required' });
@@ -50,9 +50,9 @@ app.post('/api/token', (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Invalid email format' });
   }
 
-  	console.log("date : ", date);
+  	console.log("date : ", date.getDate());
 	const token = jwt.sign({ email }, SECRET_KEY);
-	wordCounts[token].date = date;
+	wordCounts[token].date = date.getDate();;
 
 	res.json({ token });
 });
