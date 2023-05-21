@@ -78,7 +78,7 @@ const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
     if (!token) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
-    // try {
+    try {
         const decoded = jwt.verify(token.replace('Bearer ', ''), SECRET_KEY) as TokenPayload;
         req.user = decoded;
 		let date = dates[token] || Currentdate.getDate();
@@ -89,9 +89,9 @@ const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
 			dates[token] = Currentdate.getDate();
         }
         next();
-    // } catch (error) {
-    //     return res.status(403).json({ error: 'Invalid token' });
-    // }
+    } catch (error) {
+        return res.status(403).json({ error: 'Invalid token' });
+    }
 };
 
 app.post('/api/token', (req: Request, res: Response) => {
