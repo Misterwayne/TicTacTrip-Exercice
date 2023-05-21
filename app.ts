@@ -46,13 +46,14 @@ app.post('/api/token', (req: Request, res: Response) => {
 
 	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({ error: 'Invalid email format' });
-  }
+  	if (!emailRegex.test(email)) {
+    	return res.status(400).json({ error: 'Invalid email format' });
+  	}
 
   	console.log("date : ", date.getDate());
 	const token = jwt.sign({ email }, SECRET_KEY);
-	wordCounts[token].date = date.getDate();;
+	wordCounts[token].date = 0
+	wordCounts[token].date = date.getDate();
 
 	res.json({ token });
 });
