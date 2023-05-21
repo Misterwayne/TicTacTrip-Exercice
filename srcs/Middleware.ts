@@ -45,7 +45,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     }
     try {
         const decoded = jwt.verify(token.replace('Bearer ', ''), SECRET_KEY) as TokenPayload;
-
+        req.user = decoded;
         if (wordCounts[token].date !== Currentdate.getDate()){
             //check if the token was made today
             console.log("word count reseted");
