@@ -113,7 +113,7 @@ app.post('/api/token', (req: Request, res: Response) => {
 
 	const token = jwt.sign({ email }, SECRET_KEY);
 	wordCounts[token] = 0;
-	dates[token] = 0;
+	dates[token] = date.getDate();
   	console.log("date : ", dates[token]);
 
 	res.json({ token });
