@@ -3,7 +3,6 @@ import bodyParser from 'body-parser';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { justifyText } from './srcs/JustifyLine';
-import { rateLimitMiddleware, authenticateToken } from './srcs/Middleware';
 
 const app = express();
 app.use(bodyParser.text());
@@ -16,14 +15,19 @@ export const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key';
 
 export interface TokenPayload {
 	email: string;
-	date: number;
 }
 
 export interface WordCount {
-		[token: string]:{count: number, date:number} 
-	}
+		[token: string]: number;
+}
+
+export interface DateTracking {
+		[token: string]: number;
+}
 	
-export const wordCounts: WordCount = {};
+let wordCounts: WordCount = {};
+
+let dates: DateTracking = {};
 
 declare global {
 	namespace Express {
@@ -32,6 +36,63 @@ declare global {
 		}
 	}
 }
+
+export function countWords(text: string): number {
+
+    if (typeof text !== 'string') {
+            text = String(text);
+    }
+    // Remove leading and trailing whitespaces
+    text = text.trim();
+
+    // Split the text into an array of words
+    const words: string[] = text.split(/\s+/);
+    // Return the length of the words array
+    return words.length;
+}
+
+const rateLimitMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+
+    if (!token) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const wordCount = wordCounts[token] || 0;
+
+    const text = req.body;
+    const newWordCount = countWords(text);
+
+    if (wordCount + newWordCount > 80000) {
+        return res.status(402).json({ error: 'Payment Required' });
+    }
+    wordCounts[token] = wordCount + newWordCount;
+
+    next();
+};
+
+const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+    
+    const token = req.headers.authorization;
+    const Currentdate = new Date();
+    if (!token) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    // try {
+        const decoded = jwt.verify(token.replace('Bearer ', ''), SECRET_KEY) as TokenPayload;
+        req.user = decoded;
+		let date = dates[token] || Currentdate.getDate();
+        if (date !== Currentdate.getDate()){
+            //check if the token was made today
+            console.log("word count reseted");
+            wordCounts[token] = 0;
+			dates[token] = Currentdate.getDate();
+        }
+        next();
+    // } catch (error) {
+    //     return res.status(403).json({ error: 'Invalid token' });
+    // }
+};
 
 app.post('/api/token', (req: Request, res: Response) => {
 	if (req.headers['content-type'] !== 'application/json') {
@@ -51,8 +112,9 @@ app.post('/api/token', (req: Request, res: Response) => {
   	}
 
 	const token = jwt.sign({ email }, SECRET_KEY);
-	wordCounts[token] = {count: 0, date : date.getDate()};
-  	console.log("date : ", wordCounts[token].date);
+	wordCounts[token] = 0;
+	dates[token] = 0;
+  	console.log("date : ", dates[token]);
 
 	res.json({ token });
 });
@@ -78,7 +140,7 @@ app.post('/api/justify', authenticateToken, rateLimitMiddleware,(req: Request, r
 });
 
 
-const port = 3000;
+const port = 3002;
 app.listen(port, () => {
 	console.log(`Server is running on port ${port}`);
 });
