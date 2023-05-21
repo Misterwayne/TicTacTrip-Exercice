@@ -50,10 +50,9 @@ app.post('/api/token', (req: Request, res: Response) => {
     	return res.status(400).json({ error: 'Invalid email format' });
   	}
 
-  	console.log("date : ", date.getDate());
 	const token = jwt.sign({ email }, SECRET_KEY);
-	wordCounts[token].date = 0
-	wordCounts[token].date = date.getDate();
+	wordCounts[token] = {count: 0, date : date.getDate()};
+  	console.log("date : ", wordCounts[token].date);
 
 	res.json({ token });
 });
